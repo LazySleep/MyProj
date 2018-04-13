@@ -9,31 +9,17 @@ namespace MyUI.Controllers
 {
     public class HomeController : Controller
     {
-        /// <summary>
-        ///  url:index/1
-        ///  get传参
-        /// </summary>
-        /// <param name="id">这里只能用id，否则会出错</param>
-        /// <returns></returns>
-        public ActionResult Index(int id)
+        public ActionResult Index()
         {
-            //id这里默认是1因为没有更多文章测试
-            string commentJson = CommentManage.GetCommentByArticleId(id);
-            DataTable commentDataTable = JsonConvert.DeserializeObject<DataTable>(commentJson);
-            int commentId;
-            string replyJson; 
-            for (int i = 0; i < commentDataTable.Rows.Count; i++)
+            if(Session["account"] == null)
             {
-                replyJson = "";
-                commentId = int.Parse(commentDataTable.Rows[i]["comment_id"].ToString());
-                replyJson = ReplyManage.GetReplyByCommentId(commentId);
-
-            } 
-            return View();
+                Response.Redirect("/Login/index");
+            }
+                return View();
         }
 
         [HttpPost]
-        public ActionResult Index(CommentDto dd)
+        public JsonResult Index(CommentDto dd)
         {
             Comment cmt = new Comment();
             cmt.FromUId = dd.FromUId;
@@ -42,6 +28,21 @@ namespace MyUI.Controllers
             string msg;
             Result result = new Result { Status = CommentManage.AddComment(cmt, out msg), Message = msg };
             return Json(result, JsonRequestBehavior.AllowGet);
+        }
+        
+        public JsonResult GetCommentSection(int ArticleId)
+        {
+            string commentJson = CommentManage.GetCommentByArticleId(ArticleId);
+            DataTable commentDataTable = JsonConvert.DeserializeObject<DataTable>(commentJson);
+            int commentId;
+            string replyJson;
+            for (int i = 0; i < commentDataTable.Rows.Count; i++)
+            {
+                replyJson = "";
+                commentId = int.Parse(commentDataTable.Rows[i]["comment_id"].ToString());
+                replyJson = ReplyManage.GetReplyByCommentId(commentId);
+            }
+            return null;
         }
     }
 }
