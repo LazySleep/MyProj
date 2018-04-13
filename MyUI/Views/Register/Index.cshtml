@@ -1,0 +1,73 @@
+﻿@{
+    ViewBag.Title = "加入我们";
+}
+@using MyUI.Models
+@model UserDto
+
+@Styles.Render("~/Content/Login/loginstyle.css")
+@Scripts.Render("~/Scripts/md5.js")
+@Scripts.Render("~/Scripts/jquery-3.3.1.min.js")
+<script type="text/javascript">
+    $(document).ready(function () {
+        $("#commit").click(function () {
+            var acco = $("#Account").val();
+            var once = $("#Password").val();
+            var  second= $("#re-pw").val();
+            if (once != second)
+            {
+                window.alert("两次密码不相等")
+                return;
+            }
+            else if (once == "" || second == "" || acco == "")
+            {
+                window.alert("请填写完整");
+                return;
+            }
+            else if (acco.length < 8 || acco.length > 20)
+            {
+                window.alert("账号长度需大于等于8位小于等于20位");
+                return;
+            }
+            else
+            {
+                $("#Password").val(hex_md5(once));
+                $("#re-pw").val(hex_md5(second));
+                var options = {
+                        url: '@Url.Action("index", "Register")',
+                        type: 'post',
+                        dataType: 'json',
+                        data: $("form").serialize(),
+                        error: function () { window.alert("不可预知的失败") },
+                        success: function (data) {
+                            if (data.Status == false) {
+                                location.reload();//刷新当前页面
+                                window.alert(data.Message);
+                            }
+                            else {
+                                //跳转页面
+                                location.href = '@Url.Action("Index", "Login" )';
+                            }
+                        }
+                };
+                $.ajax(options);
+            }
+        });
+    });
+</script>
+<div class="background">
+    <div class="green"></div>
+    <div class="white"></div>
+</div>
+
+<div class="main">
+    <p>
+        加入我们！
+    </p>
+    @using (Html.BeginForm())
+    {
+        @Html.TextBoxFor(T => T.Account, new { @class = "input edit-text", @placeholder = "请输入账号" })
+        @Html.PasswordFor(T => T.Password, new { @class = "input edit-text", @placeholder = "请输入密码" })
+        <input class="input edit-text" id="re-pw" placeholder="确认密码" type="password">
+        <input id="commit" class="login-btn input" type="button" value="注&nbsp;&nbsp;册">
+    }
+</div>

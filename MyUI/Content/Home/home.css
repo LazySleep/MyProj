@@ -1,0 +1,37 @@
+﻿body {
+    margin: 0;
+    padding: 0;
+    background: #00B38a;
+}
+
+
+.back {
+    background: white;
+    width: 700px;
+    height: 100%;
+    margin: auto;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+}
+.content{
+    padding:30px;
+}
+#discuss {
+    padding: 0 30px;
+    padding-bottom:30px;
+}
+
+.button {
+    background-color: #00B38a;
+    color: white;
+    outline: none;
+    border: none;
+    width: 70px;
+    height: 35px;
+}
+
+    .button:active {
+        background-color: #059372;
+    }
