@@ -5,37 +5,114 @@
 @model CommentDto
 @Styles.Render("~/Content/Home/home.css")
 @Scripts.Render("~/Scripts/jquery-3.3.1.min.js")
+
 <script type="text/javascript">
-        $(document).ready(function () {
-            $("#commit").click(function () {
-                var con = $("#Content").val();
-               if (con.length < 10) {
-                    window.alert("字数不少于10个");
-                    return;
-                }
-                else {
-                    var options = {
-                        url: '@Url.Action("index", "Home")',
-                        type: 'post',
-                        dataType: 'json',
-                        data: $("form").serialize(),
-                        error: function () { window.alert("不可预知的失败") },
-                        success: function (data) {
-                            if (data.Status == false) {
-                                window.alert(data.Message);
-                            }
-                            else {
-                                location.reload();//刷新当前页面
-                            }
+    $(document).ready(function () {
+        $("#commit").click(function () {
+            if (@(Session["account"] == null?"true":"false")) {
+                window.alert("请先登陆");
+                location.href = '@Url.Action("Index", "Login" )';
+                return;
+            }
+            var con = $("#Content").val();
+            if (con.length < 10) {
+                window.alert("字数不少于10个");
+                return;
+            }else{
+                var options = {
+                    url: '@Url.Action("index", "Home")',
+                    type: 'post',
+                    dataType: 'json',
+                    data: $("form").serialize(),
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
+                    },
+                    success: function (data) {
+                        if (data.Status == false) {
+                            window.alert(data.Message);
                         }
-                    };
-                    $.ajax(options);
-                }
-            });
+                        else {
+                            location.reload();//刷新当前页面
+                        }
+                    }
+                };
+                $.ajax(options);
+            }
         });
+
+        $.ajax({
+            url: '@Url.Action("CommentSection", "Home")',
+            type: 'get',
+            dataType: 'json',
+            data: { "ArticleId": "1", "pageNo": "0", "rowCount": "-1" },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
+            },
+            success: function (data) {
+                if (data.Status) {
+                    var dataObj = eval("(" + data.Obj + ")");
+                    $.each(dataObj, function (idx, item) {
+                        $("#comment_list").append(getCommentItem(item));
+                    })
+                }else{
+                    window.alert(data.Message);
+                }
+            }
+        })
+
+        function getCommentItem(data) {
+            var comment_item = $("<dl></dl>").addClass("comment_item");
+            var comment_head = $("<dt></dt>").addClass("comment_head");
+            var comment_user = $("<span></span>").addClass("comment_user").text(data.from_uid);
+            var comment_ret = $("<a></a>").addClass("cmt_btn_reply");
+            //这里onclick事件传入用户id
+            comment_ret.attr({ href: "javascript:;", onclik: "putComment('" + data.from_uid + "')" }).text("[回复]");
+            var comment_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(comment_ret).addClass("comment_time_ret");
+
+            comment_head.append(comment_user);
+            comment_head.append(comment_time_ret);
+
+            var comment_body = $("<dd></dd>");
+            comment_body.addClass("comment_body");
+            comment_body.append($("<pre></pre>").text(data.content));
+
+            comment_item.append(comment_head);
+            comment_item.append(comment_body);
+            //评论
+            if ("[]" != data.reply) {
+                var replyObj = eval("(" + data.reply + ")");
+                var reply_item = $("<ul></ul>");
+                $.each(replyObj, function (idx, item) {
+                    reply_item.append($("<li></li>").append(getReplyItem(item)));
+                })
+                comment_item.append(reply_item);
+            }
+            return comment_item;
+        }
+
+        function getReplyItem(data) {
+            var reply_item = $("<dl></dl>");
+            var reply_head = $("<dt></dt>").addClass("reply_head");
+            var reply_user = $("<span></span>").addClass("reply_user").text(data.from_uid + " to " + data.to_uid );
+            var reply_ret = $("<a></a>").addClass("rep_btn_reply");
+            //这里onclick事件传入回复用户id
+            reply_ret.attr({ href: "javascript:;", onclik: "putReply('" + data.from_uid + "')" }).text("[回复]");
+
+            var reply_time_ret = $("<span></span>").text(data.time.replace(/T/, " ") ).append(reply_ret).addClass("reply_time_ret");
+
+            reply_head.append(reply_user);
+            reply_head.append(reply_time_ret);
+
+            var reply_body = $("<dd></dd>").addClass("reply_body").append($("<pre></pre>").text(data.content));
+
+            reply_item.append(reply_head);
+            reply_item.append(reply_body);
+            return reply_item;
+        }
+    });
 </script>
 <div class="back">
-    <p style="background:#f5f5f5;padding:20px;">欢迎您,@Session["account"].ToString() </p>
+    <p style="background:#f5f5f5;padding:20px;">欢迎您 @Session["account"]</p>
     <div class="content">
         <header class="post-header" style="opacity: 1; display: block; transform: translateY(0px);">
 
@@ -125,14 +202,16 @@
         </div>
     </div>
     <hr>
-    <div id="discuss">
+    <div id="comment">
         @using (Html.BeginForm())
         {
             <p>评论</p>
-            @Html.HiddenFor(T => T.FromUId, new { @value = @Session["account"].ToString() })
-            @Html.HiddenFor(T => T.ArticleId, new { @value = "1" })
+            @Html.HiddenFor(T => T.FromUId, new { @Value = @Session["account"] })
+            @Html.HiddenFor(T => T.ArticleId, new { @Value = "1" })
             @Html.TextAreaFor(T => T.Content, new { @style = "resize:none;width:640px;", @rows = "10" })
             <input id="commit" class="button" type="button" value="提&nbsp;&nbsp;交">
         }
+        <div id="comment_list">
+        </div>
     </div>
 </div>

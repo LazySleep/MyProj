@@ -4,23 +4,23 @@
     background: #00B38a;
 }
 
-
 .back {
     background: white;
     width: 700px;
-    height: 100%;
     margin: auto;
     left: 0;
     right: 0;
     top: 0;
     bottom: 0;
 }
-.content{
-    padding:30px;
+
+.content {
+    padding: 30px;
 }
-#discuss {
+
+#comment {
     padding: 0 30px;
-    padding-bottom:30px;
+    padding-bottom: 30px;
 }
 
 .button {
@@ -35,3 +35,63 @@
     .button:active {
         background-color: #059372;
     }
+
+.comment_item {
+    border-bottom: 1px solid #999;
+    min-height: 150px;
+}
+
+.comment_user {
+    font-size: 1.1em;
+}
+
+.reply_user {
+    font-size: 0.9em;
+    opacity: 0.6;
+}
+
+.comment_body,
+.reply_body {
+    margin: 20px 20px 80px 20px;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    font-size: 1.1em;
+}
+
+.comment_item li {
+    list-style-type: none;
+}
+
+a {
+    color: rgb(66, 139, 202);
+    text-decoration: none;
+}
+
+.cmt_btn_reply {
+    margin-right: 10px;
+}
+
+.rep_btn_reply {
+    margin-right: 30px;
+}
+
+.comment_time_ret,
+.reply_time_ret {
+    float: right;
+    text-align: center
+}
+
+.comment_time_ret {
+    font-size: 0.9em;
+}
+
+.reply_time_ret {
+    font-size: 0.7em;
+}
+.comment_time_ret a,
+.reply_time_ret a{
+    margin-left:1em;
+}

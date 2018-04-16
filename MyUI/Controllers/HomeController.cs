@@ -11,11 +11,7 @@ namespace MyUI.Controllers
     {
         public ActionResult Index()
         {
-            if(Session["account"] == null)
-            {
-                Response.Redirect("/Login/index");
-            }
-                return View();
+            return View();
         }
 
         [HttpPost]
@@ -29,20 +25,24 @@ namespace MyUI.Controllers
             Result result = new Result { Status = CommentManage.AddComment(cmt, out msg), Message = msg };
             return Json(result, JsonRequestBehavior.AllowGet);
         }
+
         
-        public JsonResult GetCommentSection(int ArticleId)
+        public JsonResult CommentSection(int ArticleId, int pageNo, int rowCount)
         {
-            string commentJson = CommentManage.GetCommentByArticleId(ArticleId);
+            string commentJson = CommentManage.GetCommentByArticleId(ArticleId, pageNo, rowCount);
             DataTable commentDataTable = JsonConvert.DeserializeObject<DataTable>(commentJson);
+            commentDataTable.Columns.Add("reply", typeof(string));
             int commentId;
             string replyJson;
             for (int i = 0; i < commentDataTable.Rows.Count; i++)
             {
                 replyJson = "";
-                commentId = int.Parse(commentDataTable.Rows[i]["comment_id"].ToString());
+                commentId = int.Parse(commentDataTable.Rows[i]["id"].ToString());
                 replyJson = ReplyManage.GetReplyByCommentId(commentId);
+                commentDataTable.Rows[i]["reply"] = replyJson;
             }
-            return null;
+            Result result = new Result { Status = true, Message = "OK", Obj = JsonConvert.SerializeObject(commentDataTable) };
+            return Json(result, JsonRequestBehavior.AllowGet);
         }
     }
 }

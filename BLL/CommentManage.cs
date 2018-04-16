@@ -59,9 +59,9 @@ namespace BLL
         /// </summary>
         /// <param name="articleId"></param>
         /// <returns></returns>
-        public static string GetCommentByArticleId(int articleId)
+        public static string GetCommentByArticleId(int articleId, int pageNo, int rowCount)
         {
-            DataTable dt = CommentService.SearchByArticleId(articleId, true);
+            DataTable dt = CommentService.SearchByArticleId(articleId, true, pageNo, rowCount);
             string jsonString = "";
             jsonString = JsonConvert.SerializeObject(dt);
             return jsonString;

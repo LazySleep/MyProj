@@ -95,19 +95,25 @@ namespace DAL
         }
 
         /// <summary>
-        /// 根据文章ID得到所有评论
+        /// 获取文章对应的评论
         /// </summary>
-        /// <param name="articleId">文章id</param>
-        /// <returns>DataSet</returns>
-        public static DataTable SearchByArticleId(int articleId, bool reserse = false)
+        /// <param name="articleId">文章ID</param>
+        /// <param name="reserse">默认为false</param>
+        /// <param name="pageNo">起始行</param>
+        /// <param name="rowCount">自其实行开始多少行</param>
+        /// <returns>DataTable</returns>
+        public static DataTable SearchByArticleId(int articleId, bool reserse = false, int pageNo = -1, int rowCount = -1)
         {
             string sql = "select * from " + COMMENT_TABLE_NAME + " where " + ARTICLE_ID + "=" + articleId;//sql语句字符串
             if (reserse)
             {
                 sql += " order by " + ID + " desc";
             }
+            if (pageNo != -1&&rowCount!=-1)
+            {
+                sql += " limit " + pageNo + "," + rowCount;
+            }
             MySqlDataAdapter msda = new MySqlDataAdapter(sql, Connection);
-
             DataTable dt = new DataTable();
             msda.Fill(dt);
             return dt;
