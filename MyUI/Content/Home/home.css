@@ -36,6 +36,9 @@
         background-color: #059372;
     }
 
+#comment_list {
+    margin-top:100px;
+}
 .comment_item {
     border-bottom: 1px solid #999;
     min-height: 150px;
@@ -50,9 +53,14 @@
     opacity: 0.6;
 }
 
-.comment_body,
+.comment_body {
+    margin: 20px 20px 50px 20px;
+    min-height: 30px;
+}
+
 .reply_body {
-    margin: 20px 20px 80px 20px;
+    margin: 20px;
+    min-height:20px;
 }
 
 pre {
@@ -91,7 +99,8 @@ a {
 .reply_time_ret {
     font-size: 0.7em;
 }
-.comment_time_ret a,
-.reply_time_ret a{
-    margin-left:1em;
-}
+
+    .comment_time_ret a,
+    .reply_time_ret a {
+        margin-left: 1em;
+    }

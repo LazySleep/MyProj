@@ -74,7 +74,6 @@ namespace DAL
             }
             finally
             {
-                connection.Close();
                 cmd.Dispose();
             }
         }

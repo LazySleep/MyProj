@@ -20,7 +20,7 @@ namespace BLL
         /// <param name="reply"></param>
         /// <param name="msg"></param>
         /// <returns>是否成功</returns>
-        public static bool AddComment(Reply reply, out string msg)
+        public static bool AddReply(Reply reply, out string msg)
         {
             if (ReplyService.Add(reply))
             {

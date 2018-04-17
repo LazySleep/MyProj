@@ -17,8 +17,12 @@ namespace MyUI.Controllers
         [HttpPost]
         public JsonResult Index(CommentDto dd)
         {
+            if (Session["account"] == null)
+            {
+                return Json(new Result { Status = false, Message = "没有登陆信息，请先登陆再操作" }, JsonRequestBehavior.AllowGet);
+            }
             Comment cmt = new Comment();
-            cmt.FromUId = dd.FromUId;
+            cmt.FromUId = Session["account"].ToString();
             cmt.Content = dd.Content;
             cmt.ArticleId = dd.ArticleId;
             string msg;
@@ -26,7 +30,6 @@ namespace MyUI.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        
         public JsonResult CommentSection(int ArticleId, int pageNo, int rowCount)
         {
             string commentJson = CommentManage.GetCommentByArticleId(ArticleId, pageNo, rowCount);
@@ -42,6 +45,22 @@ namespace MyUI.Controllers
                 commentDataTable.Rows[i]["reply"] = replyJson;
             }
             Result result = new Result { Status = true, Message = "OK", Obj = JsonConvert.SerializeObject(commentDataTable) };
+            return Json(result, JsonRequestBehavior.AllowGet);
+        }
+
+        public JsonResult ReplySection(int commentId, string toUId,string content)
+        {
+            if (Session["account"] == null)
+            {
+                return Json(new Result { Status = false, Message = "没有登陆信息，请先登陆再操作" }, JsonRequestBehavior.AllowGet);
+            }
+            Reply reply = new Reply();
+            reply.CommentId = commentId;
+            reply.FromUId = Session["account"].ToString();
+            reply.ToUId = toUId;
+            reply.Content = content;
+            string msg;
+            Result result = new Result { Status = ReplyManage.AddReply(reply, out msg), Message = msg };
             return Json(result, JsonRequestBehavior.AllowGet);
         }
     }

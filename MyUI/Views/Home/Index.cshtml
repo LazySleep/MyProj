@@ -10,8 +10,8 @@
     $(document).ready(function () {
         $("#commit").click(function () {
             if (@(Session["account"] == null?"true":"false")) {
-                window.alert("请先登陆");
-                location.href = '@Url.Action("Index", "Login" )';
+                if(window.confirm("还未登陆，是否跳转到登陆界面?"))
+                    location.href = '@Url.Action("Index", "Login" )';
                 return;
             }
             var con = $("#Content").val();
@@ -40,6 +40,9 @@
             }
         });
 
+        loadComment();
+    });
+    function loadComment() {
         $.ajax({
             url: '@Url.Action("CommentSection", "Home")',
             type: 'get',
@@ -59,57 +62,139 @@
                 }
             }
         })
+    }
 
-        function getCommentItem(data) {
-            var comment_item = $("<dl></dl>").addClass("comment_item");
-            var comment_head = $("<dt></dt>").addClass("comment_head");
-            var comment_user = $("<span></span>").addClass("comment_user").text(data.from_uid);
-            var comment_ret = $("<a></a>").addClass("cmt_btn_reply");
-            //这里onclick事件传入用户id
-            comment_ret.attr({ href: "javascript:;", onclik: "putComment('" + data.from_uid + "')" }).text("[回复]");
-            var comment_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(comment_ret).addClass("comment_time_ret");
+    function getCommentItem(data) {
+        var comment_item = $("<dl></dl>").addClass("comment_item");
+        var comment_head = $("<dt></dt>").addClass("comment_head");
+        var comment_user = $("<span></span>").addClass("comment_user").text(data.from_uid);
+        var comment_ret = $("<a></a>").addClass("cmt_btn_reply");
+        //这里onclick事件传入用户id
+        comment_ret.attr({ href: "javascript:void(0)", onclick: "putComment(" + data.id + ",'" + data.from_uid + "',this)" }).text("[回复]");
+        var comment_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(comment_ret).addClass("comment_time_ret");
 
-            comment_head.append(comment_user);
-            comment_head.append(comment_time_ret);
+        comment_head.append(comment_user);
+        comment_head.append(comment_time_ret);
 
-            var comment_body = $("<dd></dd>");
-            comment_body.addClass("comment_body");
-            comment_body.append($("<pre></pre>").text(data.content));
+        var comment_body = $("<dd></dd>");
+        comment_body.addClass("comment_body");
+        comment_body.append($("<pre></pre>").text(data.content));
 
-            comment_item.append(comment_head);
-            comment_item.append(comment_body);
-            //评论
-            if ("[]" != data.reply) {
-                var replyObj = eval("(" + data.reply + ")");
-                var reply_item = $("<ul></ul>");
-                $.each(replyObj, function (idx, item) {
-                    reply_item.append($("<li></li>").append(getReplyItem(item)));
-                })
-                comment_item.append(reply_item);
+        comment_item.append(comment_head);
+        comment_item.append(comment_body);
+        //评论
+        if ("[]" != data.reply) {
+            var replyObj = eval("(" + data.reply + ")");
+            var reply_item = $("<ul></ul>");
+            $.each(replyObj, function (idx, item) {
+                reply_item.append($("<li></li>").append($("<hr>")).append(getReplyItem(data.id, item)));
+            })
+            comment_item.append(reply_item);
+        }
+        return comment_item;
+    }
+
+    function getReplyItem(comment_id, data) {
+        var reply_item = $("<dl></dl>");
+        var reply_head = $("<dt></dt>").addClass("reply_head");
+        var reply_user = $("<span></span>").addClass("reply_user").text(data.from_uid + " to " + data.to_uid);
+        var reply_ret = $("<a></a>").addClass("rep_btn_reply");
+        //这里onclick事件传入回复用户id
+        reply_ret.attr({ href: "javascript:void(0)", onclick: "putReply(" + comment_id + ",'" + data.from_uid + "',this)" }).text("[回复]");
+
+        var reply_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(reply_ret).addClass("reply_time_ret");
+
+        reply_head.append(reply_user);
+        reply_head.append(reply_time_ret);
+
+        var reply_body = $("<dd></dd>").addClass("reply_body").append($("<pre></pre>").text(data.content));
+
+        reply_item.append(reply_head);
+        reply_item.append(reply_body);
+        return reply_item;
+    }
+
+    function putComment(comment_id, to_uid, obj) {
+        if (@(Session["account"] == null?"true":"false")) {
+            if(window.confirm("还未登陆，是否跳转到登陆界面?"))
+                location.href = '@Url.Action("Index", "Login" )';
+            return;
+        }
+        $(".comment_item textarea").remove();
+        $(".comment_item .button").remove();
+        var btn = $("<input>").addClass("button").attr({ type: "button", style: "float:right;", value: "回 复" });
+        var text_area = $("<textarea></textarea>").attr({ style: "resize: none; width:550px;", oninput: "autoTextAreaHeight(this)" });
+        $(obj).parent().parent().parent().append(text_area).append(btn);
+        $("html, body").animate({ scrollTop: text_area.prev().children("li:last-child").offset().top }, 1000);
+        btn.click(function () {
+            if (text_area.val().length < 10) {
+                window.alert("字数不少于10个");
+                return;
             }
-            return comment_item;
+            $.ajax({
+                url: '@Url.Action("ReplySection", "Home")',
+                type: 'post',
+                dataType: 'json',
+                data: { "commentId": comment_id, "toUId": to_uid, "content": text_area.val() },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
+                },
+                success: function (data) {
+                    if (data.Status) {
+                        $("#comment_list").html("");
+                        loadComment();
+                    } else {
+                        alert(data.Message);
+                    }
+                }
+            })
+        });
+    }
+
+    function putReply(comment_id, to_uid, obj){
+        if (@(Session["account"] == null?"true":"false")) {
+            if(window.confirm("还未登陆，是否跳转到登陆界面?"))
+                location.href = '@Url.Action("Index", "Login" )';
+            return;
         }
+        $(".comment_item textarea").remove();
+        $(".comment_item .button").remove();
+        var btn = $("<input>").addClass("button").attr({ type: "button", style: "float:right;", value: "回 复" });
+        var text_area = $("<textarea></textarea>").attr({ style: "resize: none; width:500px;margin:0 auto;", oninput: "autoTextAreaHeight(this)" });
+        $(obj).parent().parent().parent().append(text_area).append(btn);
+        $("html, body").animate({ scrollTop: $(obj).parent().parent().offset().top }, 1000);
+        btn.click(function () {
+            if (text_area.val().length < 10) {
+                window.alert("字数不少于10个");
+                return;
+            }
+            $.ajax({
+                url: '@Url.Action("ReplySection", "Home")',
+                type: 'post',
+                dataType: 'json',
+                data: { "commentId": comment_id, "toUId": to_uid, "content": text_area.val() },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
+                },
+                success: function (data) {
+                    if (data.Status) {
+                        $("#comment_list").html("");
+                        loadComment();
+                    } else {
+                        alert(data.Message);
+                    }
+                }
+            })
+        });
+    }
 
-        function getReplyItem(data) {
-            var reply_item = $("<dl></dl>");
-            var reply_head = $("<dt></dt>").addClass("reply_head");
-            var reply_user = $("<span></span>").addClass("reply_user").text(data.from_uid + " to " + data.to_uid );
-            var reply_ret = $("<a></a>").addClass("rep_btn_reply");
-            //这里onclick事件传入回复用户id
-            reply_ret.attr({ href: "javascript:;", onclik: "putReply('" + data.from_uid + "')" }).text("[回复]");
-
-            var reply_time_ret = $("<span></span>").text(data.time.replace(/T/, " ") ).append(reply_ret).addClass("reply_time_ret");
-
-            reply_head.append(reply_user);
-            reply_head.append(reply_time_ret);
-
-            var reply_body = $("<dd></dd>").addClass("reply_body").append($("<pre></pre>").text(data.content));
-
-            reply_item.append(reply_head);
-            reply_item.append(reply_body);
-            return reply_item;
+    function autoTextAreaHeight(o) {
+        var s = o.value;
+        if (s.match(/\n/g) != null) {
+            var count = s.match(/\n/g).length;
+            $(o).attr({ rows: count + 2 });
         }
-    });
+    }
 </script>
 <div class="back">
     <p style="background:#f5f5f5;padding:20px;">欢迎您 @Session["account"]</p>
@@ -206,10 +291,9 @@
         @using (Html.BeginForm())
         {
             <p>评论</p>
-            @Html.HiddenFor(T => T.FromUId, new { @Value = @Session["account"] })
             @Html.HiddenFor(T => T.ArticleId, new { @Value = "1" })
             @Html.TextAreaFor(T => T.Content, new { @style = "resize:none;width:640px;", @rows = "10" })
-            <input id="commit" class="button" type="button" value="提&nbsp;&nbsp;交">
+            <input id="commit" class="button" type="button" style="float:right;" value="提&nbsp;&nbsp;交">
         }
         <div id="comment_list">
         </div>
