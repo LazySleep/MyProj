@@ -1,5 +1,6 @@
 ﻿using DAL;
 using Model;
+using System;
 
 namespace BLL
 {
@@ -20,23 +21,37 @@ namespace BLL
         /// <returns>是否成功</returns>
         public static bool Add(User user, out string msg)
         {
-            if (UserService.SearchUserByAccount(user.Account) != null)
+            UserService service = new UserService();
+            try
             {
-                msg = EXIST_USER;
-                return false;
-            }
-            else
-            {
-                if (UserService.AddUser(user))
+                if (service.SearchUserByAccount(user.Account) != null)
                 {
-                    msg = ADD_SUCCESS;
-                    return true;
+                    msg = EXIST_USER;
+                    return false;
                 }
                 else
                 {
-                    msg = ADD_FAIL;
-                    return false;
+                    if (service.AddUser(user))
+                    {
+                        msg = ADD_SUCCESS;
+                        return true;
+                    }
+                    else
+                    {
+                        msg = ADD_FAIL;
+                        return false;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                msg = ADD_FAIL;
+                return false;
+            }
+            finally
+            {
+                service.CloseConnection();
             }
         }
 
@@ -47,7 +62,20 @@ namespace BLL
         /// <returns></returns>
         public static User FindByAccount(string account)
         {
-            return UserService.SearchUserByAccount(account);
+            UserService service = new UserService();
+            try
+            {
+                return service.SearchUserByAccount(account);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                return null;
+            }
+            finally
+            {
+                service.CloseConnection();
+            }
         }
 
         /// <summary>
@@ -57,13 +85,26 @@ namespace BLL
         /// <returns></returns>
         public static bool Delete(string account)
         {
-            if (UserService.SearchUserByAccount(account) != null)
+            UserService service = new UserService();
+            try
             {
-                return UserService.DeleteUserByAccount(account);
+                if (service.SearchUserByAccount(account) != null)
+                {
+                    return service.DeleteUserByAccount(account);
+                }
+                else
+                {
+                    return true;
+                }
             }
-            else
+            catch (Exception e)
             {
-                return true;
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                return false;
+            }
+            finally
+            {
+                service.CloseConnection();
             }
         }
 
@@ -75,23 +116,37 @@ namespace BLL
         /// <returns></returns>
         public static bool Modify(User user, out string msg)
         {
-            if (UserService.SearchUserByAccount(user.Account) == null)
+            UserService service = new UserService();
+            try
             {
-                msg = EXIST_NOT_USER;
-                return false;
-            }
-            else
-            {
-                if (UserService.UpdataUserPassword(user))
+                if (service.SearchUserByAccount(user.Account) == null)
                 {
-                    msg = UPDATA_SUCCESS;
-                    return true;
+                    msg = EXIST_NOT_USER;
+                    return false;
                 }
                 else
                 {
-                    msg = UPDATA_FAIL;
-                    return false;
+                    if (service.UpdataUserPassword(user))
+                    {
+                        msg = UPDATA_SUCCESS;
+                        return true;
+                    }
+                    else
+                    {
+                        msg = UPDATA_FAIL;
+                        return false;
+                    }
                 }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                msg = UPDATA_FAIL;
+                return false;
+            }
+            finally
+            {
+                service.CloseConnection();
             }
         }
     }

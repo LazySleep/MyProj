@@ -1,26 +1,31 @@
 ﻿using MySql.Data.MySqlClient;
 using System;
+using System.Configuration;
 using System.Data;
 
 namespace DAL
 {
     public class Service
     {
-        private const string DATABASE = "vstest";
-        private static MySqlConnection connection;
+        private string connectStr = ConfigurationManager.ConnectionStrings["mysqlConnectStr"].ConnectionString;
+        private MySqlConnection connection;
 
         /// <summary>
         /// 连接数据库
         /// </summary>
-        public static MySqlConnection Connection
+        public MySqlConnection Connection
         {
             get
             {
                 if (connection == null)
                 {
                     //连接本地数据库命令
-                    string strConn = "Database=" + DATABASE + ";Data Source=127.0.0.1;User Id=root;Password=123456;pooling=false;CharSet=utf8;port=3306";
-                    connection = new MySqlConnection(strConn);
+                    // string strConn = "Database=" + DATABASE + ";Data Source=127.0.0.1;User Id=root;Password=123456;pooling=false;CharSet=utf8;port=3306";
+                    connection = new MySqlConnection(connectStr);
+                    connection.Open();
+                }
+                else if (connection.State == ConnectionState.Closed)
+                {
                     connection.Open();
                 }
                 return connection;
@@ -55,7 +60,7 @@ namespace DAL
         /// <param name="commandType"></param>
         /// <param name="para">存储相应参数的容器</param>
         /// <returns>受影响的行数</returns>
-        public static int ExecuteCommand(string commandText, CommandType commandType, MySqlParameter[] para)
+        public int ExecuteCommand(string commandText, CommandType commandType, MySqlParameter[] para)
         {
             MySqlCommand cmd = new MySqlCommand();
             cmd.Connection = Connection;

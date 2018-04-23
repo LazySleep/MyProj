@@ -1,7 +1,6 @@
 ﻿using DAL;
 using Model;
-using Newtonsoft.Json;
-using System.Data;
+using System.Collections.Generic;
 
 namespace BLL
 {
@@ -22,7 +21,8 @@ namespace BLL
         /// <returns>是否成功</returns>
         public static bool AddComment(Comment cmt, out string msg)
         {
-            if (CommentService.Add(cmt))
+            CommentService service = new CommentService();
+            if (service.Add(cmt))
             {
                 msg = ADD_SUCCESS;
                 return true;
@@ -41,7 +41,8 @@ namespace BLL
         /// <returns></returns>
         public static bool DeleteCommentById(int commentId)
         {
-            return CommentService.DeleteById(commentId);
+            CommentService service = new CommentService();
+            return service.DeleteById(commentId);
         }
 
         /// <summary>
@@ -51,7 +52,8 @@ namespace BLL
         /// <returns></returns>
         public static bool Modify(Comment cmt)
         {
-            return CommentService.UpdataContent(cmt);
+            CommentService service = new CommentService();
+            return service.UpdataContent(cmt);
         }
 
         /// <summary>
@@ -59,12 +61,11 @@ namespace BLL
         /// </summary>
         /// <param name="articleId"></param>
         /// <returns></returns>
-        public static string GetCommentByArticleId(int articleId, int pageNo, int rowCount)
+        public static List<Comment> GetCommentByArticleId(int articleId, int pageNo, int rowCount)
         {
-            DataTable dt = CommentService.SearchByArticleId(articleId, true, pageNo, rowCount);
-            string jsonString = "";
-            jsonString = JsonConvert.SerializeObject(dt);
-            return jsonString;
+            CommentService service = new CommentService();
+            List<Comment> comments = service.SearchByArticleId(articleId, true, pageNo, rowCount);
+            return comments;
         }
     }
 }

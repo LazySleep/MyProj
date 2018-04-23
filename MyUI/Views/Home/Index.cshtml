@@ -47,7 +47,7 @@
             url: '@Url.Action("CommentSection", "Home")',
             type: 'get',
             dataType: 'json',
-            data: { "ArticleId": "1", "pageNo": "0", "rowCount": "-1" },
+            data: { "articleId": "1", "pageNo": "0", "rowCount": "-1" },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
             },
@@ -67,27 +67,27 @@
     function getCommentItem(data) {
         var comment_item = $("<dl></dl>").addClass("comment_item");
         var comment_head = $("<dt></dt>").addClass("comment_head");
-        var comment_user = $("<span></span>").addClass("comment_user").text(data.from_uid);
+        var comment_user = $("<span></span>").addClass("comment_user").text(data.FromUId);
         var comment_ret = $("<a></a>").addClass("cmt_btn_reply");
         //这里onclick事件传入用户id
-        comment_ret.attr({ href: "javascript:void(0)", onclick: "putComment(" + data.id + ",'" + data.from_uid + "',this)" }).text("[回复]");
-        var comment_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(comment_ret).addClass("comment_time_ret");
+        comment_ret.attr({ href: "javascript:void(0)", onclick: "putComment(" + data.Id + ",'" + data.FromUId + "',this)" }).text("[回复]");
+        var comment_time_ret = $("<span></span>").text(data.Time.replace(/T/, " ")).append(comment_ret).addClass("comment_time_ret");
 
         comment_head.append(comment_user);
         comment_head.append(comment_time_ret);
 
         var comment_body = $("<dd></dd>");
         comment_body.addClass("comment_body");
-        comment_body.append($("<pre></pre>").text(data.content));
+        comment_body.append($("<pre></pre>").text(data.Content));
 
         comment_item.append(comment_head);
         comment_item.append(comment_body);
         //评论
-        if ("[]" != data.reply) {
-            var replyObj = eval("(" + data.reply + ")");
+        if ("[]" != data.Reply) {
+            var replyObj = eval("(" + data.Reply + ")");
             var reply_item = $("<ul></ul>");
             $.each(replyObj, function (idx, item) {
-                reply_item.append($("<li></li>").append($("<hr>")).append(getReplyItem(data.id, item)));
+                reply_item.append($("<li></li>").append($("<hr>")).append(getReplyItem(data.Id, item)));
             })
             comment_item.append(reply_item);
         }
@@ -97,17 +97,17 @@
     function getReplyItem(comment_id, data) {
         var reply_item = $("<dl></dl>");
         var reply_head = $("<dt></dt>").addClass("reply_head");
-        var reply_user = $("<span></span>").addClass("reply_user").text(data.from_uid + " to " + data.to_uid);
+        var reply_user = $("<span></span>").addClass("reply_user").text(data.FromUId + " to " + data.ToUId);
         var reply_ret = $("<a></a>").addClass("rep_btn_reply");
         //这里onclick事件传入回复用户id
-        reply_ret.attr({ href: "javascript:void(0)", onclick: "putReply(" + comment_id + ",'" + data.from_uid + "',this)" }).text("[回复]");
+        reply_ret.attr({ href: "javascript:void(0)", onclick: "putReply(" + comment_id + ",'" + data.FromUId + "',this)" }).text("[回复]");
 
-        var reply_time_ret = $("<span></span>").text(data.time.replace(/T/, " ")).append(reply_ret).addClass("reply_time_ret");
+        var reply_time_ret = $("<span></span>").text(data.Time.replace(/T/, " ")).append(reply_ret).addClass("reply_time_ret");
 
         reply_head.append(reply_user);
         reply_head.append(reply_time_ret);
 
-        var reply_body = $("<dd></dd>").addClass("reply_body").append($("<pre></pre>").text(data.content));
+        var reply_body = $("<dd></dd>").addClass("reply_body").append($("<pre></pre>").text(data.Content));
 
         reply_item.append(reply_head);
         reply_item.append(reply_body);

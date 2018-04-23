@@ -1,7 +1,8 @@
 ﻿using DAL;
 using Model;
 using Newtonsoft.Json;
-using System.Data;
+using System;
+using System.Collections.Generic;
 
 namespace BLL
 {
@@ -22,15 +23,29 @@ namespace BLL
         /// <returns>是否成功</returns>
         public static bool AddReply(Reply reply, out string msg)
         {
-            if (ReplyService.Add(reply))
+            ReplyService service = new ReplyService();
+            try
             {
-                msg = ADD_SUCCESS;
-                return true;
+                if (service.Add(reply))
+                {
+                    msg = ADD_SUCCESS;
+                    return true;
+                }
+                else
+                {
+                    msg = ADD_FAIL;
+                    return false;
+                }
             }
-            else
+            catch (Exception e)
             {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
                 msg = ADD_FAIL;
                 return false;
+            }
+            finally
+            {
+                service.CloseConnection();
             }
         }
 
@@ -41,7 +56,20 @@ namespace BLL
         /// <returns></returns>
         public static bool DeleteReplyById(int replyId)
         {
-            return ReplyService.DeleteById(replyId);
+            ReplyService service = new ReplyService();
+            try
+            {
+                return service.DeleteById(replyId);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                return false;
+            }
+            finally
+            {
+                service.CloseConnection();
+            }
         }
 
         /// <summary>
@@ -49,12 +77,23 @@ namespace BLL
         /// </summary>
         /// <param name="commentId"></param>
         /// <returns></returns>
-        public static string GetReplyByCommentId(int commentId)
+        public static List<Reply> GetReplyByCommentId(int commentId)
         {
-            DataTable dt = ReplyService.SearchByCommentId(commentId);
-            string jsonString = "";
-            jsonString = JsonConvert.SerializeObject(dt);
-            return jsonString;
+            ReplyService service = new ReplyService();
+            try
+            {
+                List<Reply> replys = service.SearchByCommentId(commentId);
+                return replys;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("\n异常信息:\n{0}", e.Message);
+                return null;
+            }
+            finally
+            {
+                service.CloseConnection();
+            }
         }
     }
 }

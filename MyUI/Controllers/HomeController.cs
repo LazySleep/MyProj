@@ -2,7 +2,7 @@
 using Model;
 using MyUI.Models;
 using Newtonsoft.Json;
-using System.Data;
+using System.Collections.Generic;
 using System.Web.Mvc;
 
 namespace MyUI.Controllers
@@ -30,25 +30,30 @@ namespace MyUI.Controllers
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult CommentSection(int ArticleId, int pageNo, int rowCount)
+        public JsonResult CommentSection(int articleId, int pageNo, int rowCount)
         {
-            string commentJson = CommentManage.GetCommentByArticleId(ArticleId, pageNo, rowCount);
-            DataTable commentDataTable = JsonConvert.DeserializeObject<DataTable>(commentJson);
-            commentDataTable.Columns.Add("reply", typeof(string));
-            int commentId;
-            string replyJson;
-            for (int i = 0; i < commentDataTable.Rows.Count; i++)
+            List<Comment> comments = CommentManage.GetCommentByArticleId(articleId, pageNo, rowCount);
+            List<object> list = new List<object>();
+            for (int i = 0; i < comments.Count; i++)
             {
-                replyJson = "";
-                commentId = int.Parse(commentDataTable.Rows[i]["id"].ToString());
-                replyJson = ReplyManage.GetReplyByCommentId(commentId);
-                commentDataTable.Rows[i]["reply"] = replyJson;
+                List<Reply> replys = ReplyManage.GetReplyByCommentId(comments[i].Id);
+                list.Add(
+                    new
+                    {
+                        comments[i].Id,
+                        comments[i].ArticleId,
+                        comments[i].FromUId,
+                        comments[i].Content,
+                        comments[i].Time,
+                        Reply = replys == null ? "[]" : JsonConvert.SerializeObject(replys)
+                    }
+            );
             }
-            Result result = new Result { Status = true, Message = "OK", Obj = JsonConvert.SerializeObject(commentDataTable) };
+            Result result = new Result { Status = true, Message = "OK", Obj = JsonConvert.SerializeObject(list) };
             return Json(result, JsonRequestBehavior.AllowGet);
         }
 
-        public JsonResult ReplySection(int commentId, string toUId,string content)
+        public JsonResult ReplySection(int commentId, string toUId, string content)
         {
             if (Session["account"] == null)
             {
