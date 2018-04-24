@@ -40,14 +40,17 @@
             }
         });
 
-        loadComment();
+        $("#loadmore").click(function () {
+            loadComment(1, $("#comment_list").children().length, 2);
+        });
+        loadComment(1,0,2);
     });
-    function loadComment() {
+    function loadComment(articleId,pageNo,rowCount) {
         $.ajax({
             url: '@Url.Action("CommentSection", "Home")',
             type: 'get',
             dataType: 'json',
-            data: { "articleId": "1", "pageNo": "0", "rowCount": "-1" },
+            data: { "articleId": articleId, "pageNo": pageNo, "rowCount": rowCount },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(XMLHttpRequest.readyState + " " + XMLHttpRequest.status + " " + textStatus);
             },
@@ -57,8 +60,12 @@
                     $.each(dataObj, function (idx, item) {
                         $("#comment_list").append(getCommentItem(item));
                     })
-                }else{
-                    window.alert(data.Message);
+                } else {
+                    if (data.Message == "NoData") {
+                        $("#loadmore").hide();
+                    } else {
+                        window.alert(data.Message);
+                    }
                 }
             }
         })
@@ -297,5 +304,6 @@
         }
         <div id="comment_list">
         </div>
+        <input id="loadmore" type="button" value="加载更多" style="width:100%;text-align:center;height:40px;" />
     </div>
 </div>

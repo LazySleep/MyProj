@@ -33,6 +33,8 @@ namespace MyUI.Controllers
         public JsonResult CommentSection(int articleId, int pageNo, int rowCount)
         {
             List<Comment> comments = CommentManage.GetCommentByArticleId(articleId, pageNo, rowCount);
+            if (comments == null)
+                return Json(new Result { Status = false, Message = "NoData" }, JsonRequestBehavior.AllowGet);
             List<object> list = new List<object>();
             for (int i = 0; i < comments.Count; i++)
             {
