@@ -1,8 +1,6 @@
 ﻿using Dapper;
 using Model;
-using MySql.Data.MySqlClient;
 using System.Collections.Generic;
-using System.Data;
 
 namespace DAL
 {

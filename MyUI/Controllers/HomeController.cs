@@ -67,7 +67,7 @@ namespace MyUI.Controllers
             reply.ToUId = toUId;
             reply.Content = content;
             string msg;
-            Result result = new Result { Status = ReplyManage.AddReply(reply, out msg), Message = msg };
+            Result result = new Result { Status = ReplyManage.AddReply(reply, out msg), Obj = "",Message = msg };
             return Json(result, JsonRequestBehavior.AllowGet);
         }
     }
